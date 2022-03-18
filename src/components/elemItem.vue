@@ -1,15 +1,19 @@
 <template>
 
       <div class="main__element">
-      <button class="white" :class="{white2: isDone}" @click="switching"></button>
-      <div style="display: flex; flex-direction: column; width: 100%" >
-        <div style="width: 35%; display: flex; justify-content: space-between; font-size: 15px;" :class="{ doneClass: isDone }">
-          <strong>{{elem.date}}</strong>
-          <strong>{{elem.time}}</strong>
-          <strong>{{elem.types}}</strong>
+      <button class="white" @click="dones">
+        <transition name="done">
+          <div v-if="mainElem.done" class="isDone"></div>
+        </transition>
+      </button>
+      <div style="display: flex; flex-direction: column; width: 100%; min-width: 100px" >
+        <div style="width: 50%; display: flex; justify-content: space-between; font-size: 15px;" :class="{ doneClass: mainElem.done }">
+          <strong style="width: 25%">{{elem.date}}</strong>
+          <strong style="width: 15%">{{elem.time}}</strong>
+          <strong style="width: 15%">{{elem.types}}</strong>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
-          <strong :class="{ doneClass: isDone }">{{elem.event}}</strong>
+          <strong class="doneClassMain" :class="{ doneClass: mainElem.done }">{{elem.event}}</strong>
           <div style="display: flex; align-items: center;">
           </div>
         </div>
@@ -23,7 +27,7 @@
 export default {
     data(){
       return{
-        isDone: false
+        mainElem: this.elem
       }
     },
     props:  {
@@ -38,13 +42,15 @@ export default {
       deletes(){
           this.$emit('deletes', this.elem.id)
       },
-      switching(){
-        this.isDone = !this.isDone
+      dones(){
+        this.mainElem.done = !this.mainElem.done
+        this.$emit('dones', this.mainElem)
       }
     }
 }
 </script>
 <style>
+
     .main__element{
       padding: 5px 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.22);
@@ -56,25 +62,31 @@ export default {
     }
 
     .white{
-      padding: 6px;
-      border: 2px solid red;
+      padding: 7px;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #ac92ec;
       background-color: white;
       border-radius: 50%;
       margin-right: 10px;
-      display: block;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .white2{
-      padding: 6px;
-      border: 2px solid red;
-      background-color: red;
+    .isDone{
+      padding: 5px 5px;
+      background-color: #ac92ec;
       border-radius: 50%;
-      margin-right: 10px;
-      display: block;
     }
+
 
     .doneClass{
       text-decoration: line-through;
+    }
+
+    .doneClassMain{
+      max-width: 60%;
     }
 
     img{
@@ -88,5 +100,17 @@ export default {
       background-color: gray;
       transition: .3s;
     }
+
+    .done-enter-active,
+    .done-leave-active {
+      opacity: 1;
+      transition: all .5s ease;
+    }
+    .done-enter-from,
+    .done-leave-to {
+      opacity: 0;
+      transition: all .5s ease;
+    }
+
 
 </style>

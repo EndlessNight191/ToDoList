@@ -1,6 +1,7 @@
 <template>
   {{local}}
-    <h1 style="margin: 0 auto; color: white">My List</h1>
+    <h1 style="margin: 0.5rem auto; color: white">My List</h1>
+    <MyInformate :procent="procent" :procent2="procent2" :percentHundred="percent1" :percentHundred2="percent2" @dones="dones"></MyInformate>
     <div v-if="show" class="dialog__visible__main">
         <input v-model="authObject.login" type="text" placeholder="Имя">
         <input v-model="authObject.password" :type="seePassword ? 'text' : 'password'" placeholder="Пороль" name="password">
@@ -37,11 +38,11 @@
       </div>
     </header>
 
-      <myDialog :stroke="text" :element2="element3" @create="creaateElement" v-model:show="dialogVisible"/>
+      <myDialog :stroke="text" :element2="element2" @create="creaateElement" v-model:show="dialogVisible"/>
       <myDialog :stroke="text2" :element2="element2" @create="refactorElement" v-model:show="dialogVisible2"/>
 
-      <transition-group name="list" >
-        <elemItem @refactor="refactor" @deletes="deletes" :elem="elem" v-for="elem in elements2" :key="elem.index" class="list-complete-item"/>
+      <transition-group name="list" tag="div" class="instruments">
+        <elemItem @refactor="refactor" @deletes="deletes" :elem="elem" v-for="elem in elements2" :key="elem.index"/>
       </transition-group>
 
   </div>
@@ -51,16 +52,16 @@
 <script>
 import elemItem from '@/components/elemItem.vue'
 import myDialog from '@/components/myDialog.vue'
+import MyInformate from '@/components/MyInformate.vue'
 
 export default {
   name: 'App',
   data(){
     return{
+      percent1: false,
+      percent2: false,
       searche: '',
       element2: {
-        prop: false
-      },
-      element3: {
         prop: false
       },
       isShowDropdown: false,
@@ -90,8 +91,28 @@ export default {
   components: {
     elemItem,
     myDialog,
+    MyInformate,
   },
   methods: {
+    dones(element){
+      let count = 0
+      for(let elem of this.mainElements){
+        if(elem.id === element.id){
+          this.mainElements[count].done = element.done
+        }
+        count++
+      }
+
+      let plusCount = 0
+      let minusCount = 0
+      for(let element of this.mainElements){
+        if(!element.done){
+          plusCount++
+        }else{minusCount++}
+      }
+      this.percent1 = (plusCount*100)/this.mainElements.length
+      this.percent2 = (minusCount*100)/this.mainElements.length
+    },
     auth(){
         if(this.authObject.login === this.trueAuth.login && this.authObject.password === this.trueAuth.password) {
           this.show = false
@@ -215,9 +236,11 @@ export default {
     },
     deletes(id){
       for(let elem in this.mainElements){
+        elem = Number(elem)
         if(this.mainElements[elem].id === id){
-          this.elements.splice(elem*1, 1)
-        }
+          this.mainElements.splice(elem, 1)
+          console.log(elem)
+        }else{alert('hello')}
       }
     },
   },
@@ -230,6 +253,17 @@ export default {
            return newSelect === item.types
          })
        }
+    },
+    mainElements(){
+      let plusCount = 0
+      let minusCount = 0
+      for(let element of this.mainElements){
+        if(!element.done){
+          plusCount++
+        }else{minusCount++}
+      }
+      this.percent1 = (plusCount*100)/this.mainElements.length
+      this.percent2 = (minusCount*100)/this.mainElements.length
     }
   },
   created() {
@@ -252,6 +286,26 @@ export default {
         localStorage.array = JSON.stringify(this.mainElements)
       }
       return ''
+    },
+    procent(){
+      let count = 0
+      for(let element of this.mainElements){
+        if(!element.done){
+          count++
+        }
+      }
+
+      return count
+    },
+    procent2(){
+      let count = 0
+      for(let element of this.mainElements){
+        if(element.done){
+          count++
+        }
+      }
+
+      return count
     }
   },
 }
@@ -315,6 +369,20 @@ header{
   border-radius: 10px;
   position: relative;
 }
+
+@media (max-width: 560px) {
+  .main{
+    padding: 20px;
+    padding-bottom: 20px;
+    margin: 0px auto;
+    background-color: white;
+    min-height: 80vh;
+    width: 80vw;
+    border-radius: 10px;
+    position: relative;
+  }
+}
+
 html, body{
   background-color: #E8D1D1	;
   display: flex;

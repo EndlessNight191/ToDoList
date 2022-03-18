@@ -49,6 +49,7 @@ export default {
         time: '',
         event: '',
         types: '',
+        done: false,
       }
     }
   },
