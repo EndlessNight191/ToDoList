@@ -1,7 +1,7 @@
 <template>
 
       <div class="main__element">
-      <button class="white" @click="dones">
+      <button class="white" @click="changeDone">
         <transition name="done">
           <div v-if="mainElem.done" class="isDone"></div>
         </transition>
@@ -42,9 +42,9 @@ export default {
       deletes(){
           this.$emit('deletes', this.elem.id)
       },
-      dones(){
-        this.mainElem.done = !this.mainElem.done
-        this.$emit('dones', this.mainElem)
+      changeDone(){
+          this.mainElem.done = !this.mainElem.done
+          this.$emit('changeDone', this.mainElem)
       }
     }
 }

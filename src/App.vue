@@ -1,7 +1,5 @@
 <template>
   {{local}}
-    <h1 style="margin: 0.5rem auto; color: white">My List</h1>
-    <MyInformate :procent="procent" :procent2="procent2" :percentHundred="percent1" :percentHundred2="percent2" @dones="dones"></MyInformate>
     <div v-if="show" class="dialog__visible__main">
         <input v-model="authObject.login" type="text" placeholder="Имя">
         <input v-model="authObject.password" :type="seePassword ? 'text' : 'password'" placeholder="Пороль" name="password">
@@ -10,7 +8,10 @@
         <button @click="auth">Авторизоваться</button>
     </div>
 
-    <div v-else class="main">
+    <div v-else>
+      <h1 style="margin: 0.5rem auto; color: white">My List</h1>
+      <MyInformate :procent="procent" :procent2="procent2" :percentHundred="percent1" :percentHundred2="percent2"></MyInformate>
+    <div class="main">
     <header>
         <div id="v-model-select" style="display: flex; align-items: center">
           <select v-model="selected">
@@ -19,7 +20,7 @@
             <option>meeting</option>
             <option>tusk</option>
           </select>
-          <span>Выбрано: {{ selected }}</span>
+          <span style="margin-left: 10px">Выбрано: <span style="color: #ac92ec; font-size: 26px">{{ selected }}</span></span>
         </div>
       <div class="filters">
         <img @click="inVisible" src="@/assets/Plus.svg" alt="" style="height: 25px; width: 25px">
@@ -33,6 +34,8 @@
             <div class="optionDiv" @click="filterDefault">По умолчанию</div>
             <div class="optionDiv" @click="filterTime">Время</div>
             <div class="optionDiv" @click="filterDate">Дата</div>
+            <div class="optionDiv" @click="filterDone">Выполненые</div>
+            <div class="optionDiv" @click="filterNotCompleted">Поставленные</div>
           </div>
         </div>
       </div>
@@ -42,24 +45,27 @@
       <myDialog :stroke="text2" :element2="element2" @create="refactorElement" v-model:show="dialogVisible2"/>
 
       <transition-group name="list" tag="div" class="instruments">
-        <elemItem @refactor="refactor" @deletes="deletes" :elem="elem" v-for="elem in elements2" :key="elem.index"/>
+        <elemItem @refactor="refactor" @deletes="deletes" @changeDone="changeDone" :elem="elem" v-for="elem in elements2" :key="elem.index"/>
       </transition-group>
 
   </div>
+    </div>
 
 </template>
 
 <script>
+import { ref } from 'vue'
 import elemItem from '@/components/elemItem.vue'
 import myDialog from '@/components/myDialog.vue'
 import MyInformate from '@/components/MyInformate.vue'
+
 
 export default {
   name: 'App',
   data(){
     return{
-      percent1: false,
-      percent2: false,
+      percent1: 0,
+      percent2: 0,
       searche: '',
       element2: {
         prop: false
@@ -94,7 +100,7 @@ export default {
     MyInformate,
   },
   methods: {
-    dones(element){
+    changeDone(element){
       let count = 0
       for(let elem of this.mainElements){
         if(elem.id === element.id){
@@ -155,6 +161,12 @@ export default {
     },
     filterDefault(){
       this.elements = this.mainElements
+    },
+    filterDone(){
+      this.elements = this.mainElements.filter( item => item.done === true )
+    },
+    filterNotCompleted(){
+      this.elements = this.mainElements.filter( item => item.done === false )
     },
     filterDate(){
       let yearOne = ''
@@ -239,9 +251,19 @@ export default {
         elem = Number(elem)
         if(this.mainElements[elem].id === id){
           this.mainElements.splice(elem, 1)
-          console.log(elem)
-        }else{alert('hello')}
+          break
+        }
       }
+
+      let plusCount = 0
+      let minusCount = 0
+      for(let element of this.mainElements){
+        if(!element.done){
+          plusCount++
+        }else{minusCount++}
+      }
+      this.percent1 = (plusCount*100)/this.mainElements.length
+      this.percent2 = (minusCount*100)/this.mainElements.length
     },
   },
   watch:{
@@ -270,7 +292,7 @@ export default {
       if(localStorage.array) {
         this.mainElements = JSON.parse(localStorage.getItem('array'))
       }
-    this.elements = this.mainElements
+      this.elements = this.mainElements
   },
   computed: {
     elements2() {
@@ -339,6 +361,7 @@ header{
   border-radius: 10px;
   right: 25%;
   border: 2px black solid;
+  top: 23%;
 }
 
 .optionDiv{
@@ -421,6 +444,28 @@ button{
   cursor: pointer;
 }
 
+select{
+  font-weight: 600;
+  height: 40px;
+  cursor: pointer;
+  border: 2px gray solid;
+  color: #ac92ec;
+  transition: .5s;
+}
+
+select:hover{
+  font-weight: 600;
+  height: 40px;
+  cursor: pointer;
+  border: 2px #ac92ec solid;
+  color: #ac92ec;
+}
+
+option{
+  display: flex;
+  justify-content: center;
+}
+
 
 .list-item {
   display: inline-block;
@@ -447,6 +492,7 @@ button{
 
 .slide-fade-leave-active {
   transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+  transform: translateX(300px);
 }
 
 .slide-fade-enter-from,
