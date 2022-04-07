@@ -9,6 +9,9 @@
     </div>
 
     <div v-else>
+      <transition name="InfoTime">
+        <MyInfoTime v-if="showInfoTime" :element="itemInfoTime"></MyInfoTime>
+      </transition>
       <h1 style="margin: 0.5rem auto; color: white">My List</h1>
       <MyInformate :procent="procent" :procent2="procent2" :percentHundred="percent1" :percentHundred2="percent2"></MyInformate>
     <div class="main">
@@ -58,12 +61,15 @@ import { ref } from 'vue'
 import elemItem from '@/components/elemItem.vue'
 import myDialog from '@/components/myDialog.vue'
 import MyInformate from '@/components/MyInformate.vue'
+import MyInfoTime from "@/components/MyInfoTime";
 
 
 export default {
   name: 'App',
   data(){
     return{
+      showInfoTime: false,
+      itemInfoTime: '',
       percent1: 0,
       percent2: 0,
       searche: '',
@@ -98,6 +104,7 @@ export default {
     elemItem,
     myDialog,
     MyInformate,
+    MyInfoTime
   },
   methods: {
     changeDone(element){
@@ -229,15 +236,16 @@ export default {
       })
     },
     inVisible(){
+      this.element2.prop = false
       this.dialogVisible = true
     },
     creaateElement(element){
       this.mainElements.push(element)
     },
     refactor(element){
-      this.dialogVisible2 = true
       this.element2 = element
       this.element2.prop = true
+      this.dialogVisible2 = true
     },
     refactorElement(element){
       for(let elem in this.mainElements){
@@ -293,6 +301,31 @@ export default {
         this.mainElements = JSON.parse(localStorage.getItem('array'))
       }
       this.elements = this.mainElements
+      setInterval(() => {
+        let time = new Date().toLocaleString()
+        time = time.split(',')
+        let date = time[0]
+        let timeWatch = time[1].slice(1)
+        const date1 = new Date(`${date}, ${timeWatch}`);
+        this.elements.map( item => {
+          const date2 = new Date(`${item.date}, ${item.time}`);
+          const difference = date2.getTime() - date1.getTime();
+          let minutes = Math.floor(difference / 60000);
+          if((minutes <= 60 && minutes >= 59) || (minutes <= 30 && minutes >= 29)){
+            this.itemInfoTime = item
+            this.showInfoTime = true
+            setInterval(() => {
+              this.itemInfoTime = ''
+              this.showInfoTime = false
+            }, 6000)
+          }else{
+            this.itemInfoTime = ''
+            this.showInfoTime = false
+          }
+
+        })
+
+      }, 60000);
   },
   computed: {
     elements2() {
@@ -352,16 +385,31 @@ header{
   margin-bottom: 20px;
 }
 
+@media (max-width: 1150px) {
+  header{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .filters{
+    width: 450px;
+    display: flex;
+    align-items: center;
+    margin-left: 40%;
+  }
+}
+
 .selectDiv{
-  position: fixed;
+  position: absolute;
   display: block;
   z-index:99999999;
   background-color: white;
   width: 150px;
   border-radius: 10px;
-  right: 25%;
   border: 2px black solid;
-  top: 23%;
+  right: 3%;
 }
 
 .optionDiv{
@@ -393,19 +441,6 @@ header{
   position: relative;
 }
 
-@media (max-width: 560px) {
-  .main{
-    padding: 20px;
-    padding-bottom: 20px;
-    margin: 0px auto;
-    background-color: white;
-    min-height: 80vh;
-    width: 80vw;
-    border-radius: 10px;
-    position: relative;
-  }
-}
-
 html, body{
   background-color: #E8D1D1	;
   display: flex;
@@ -424,24 +459,82 @@ html, body{
 
 input{
   width: 70%;
+  border-radius: 10px;
+  border: 2px solid black;
   height: 20px;
   margin-top: 40px;
   padding: 10px;
-  color: gray;
+  color: black;
+  font-size: 16px;
+  font-weight: 600;
+  transition: .5s;
+}
+
+input:focus{
+  outline:none;
+  width: 70%;
+  border-radius: 10px;
+  border: 2px solid #ac92ec;
+  height: 20px;
+  margin-top: 40px;
+  padding: 10px;
+  color: #ac92ec;
+  font-size: 16px;
+  font-weight: 600;
+  transition: .5s;
 }
 
 .input__filters{
   width: 300px;
   padding: 5px;
   margin: 0px;
+  border-radius: 10px;
+  border: 2px solid black;
+  height: 20px;
+  color: black;
+  font-size: 16px;
+  font-weight: 600;
+  transition: .5s;
+}
+
+.input__filters:focus{
+  outline:none;
+  width: 300px;
+  padding: 5px;
+  margin: 0px;
+  border-radius: 10px;
+  border: 2px solid #ac92ec;
+  height: 20px;
+  color: #ac92ec;
+  font-size: 16px;
+  font-weight: 600;
+  transition: .5s;
 }
 
 button{
   padding: 10px;
   border-radius: 10px;
-  background-color: #E8D1D1;
+  background-color: #ac92ec;
   border: 2px solid white;
   cursor: pointer;
+  margin-left: 10px;
+  font-size: 16px;
+  color: black;
+  font-weight: 600;
+  transition: .5s;
+}
+
+button:hover{
+  padding: 10px;
+  border-radius: 10px;
+  background-color: white;
+  border: 2px solid #ac92ec;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 16px;
+  color: #ac92ec;
+  font-weight: 600;
+  transition: .5s;
 }
 
 select{
@@ -466,6 +559,26 @@ option{
   justify-content: center;
 }
 
+@media (max-width: 560px) {
+  .main{
+    padding: 20px;
+    padding-bottom: 20px;
+    margin: 0px auto;
+    background-color: white;
+    min-height: 80vh;
+    width: 80vw;
+    border-radius: 10px;
+    position: relative;
+  }
+
+  .input__filters{
+    width: 175px;
+  }
+
+  .input__filters:focus{
+    width: 175px;
+  }
+}
 
 .list-item {
   display: inline-block;
@@ -499,5 +612,20 @@ option{
 .slide-fade-leave-to {
   transform: translateX(300px);
   opacity: 0;
+}
+
+.InfoTime-enter-active,
+.InfoTime-leave-active {
+  transform: translateY(-3%);
+  transition: 1s;
+  opacity: 1;
+}
+
+.InfoTime-enter-from,
+.InfoTime-leave-to {
+  position: absolute;
+  transform: translateY(150px);
+  opacity: 0;
+  transition: 1s;
 }
 </style>

@@ -7,10 +7,10 @@
         </transition>
       </button>
       <div style="display: flex; flex-direction: column; width: 100%; min-width: 100px" >
-        <div style="width: 50%; display: flex; justify-content: space-between; font-size: 15px;" :class="{ doneClass: mainElem.done }">
-          <strong style="width: 25%">{{elem.date}}</strong>
-          <strong style="width: 15%">{{elem.time}}</strong>
-          <strong style="width: 15%">{{elem.types}}</strong>
+        <div class="infoItem" :class="{ doneClass: mainElem.done }">
+          <div>{{elem.date}}</div>
+          <div>{{elem.time}}</div>
+          <div>{{elem.types}}</div>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%">
           <strong class="doneClassMain" :class="{ doneClass: mainElem.done }">{{elem.event}}</strong>
@@ -99,6 +99,19 @@ export default {
     img:hover{
       background-color: gray;
       transition: .3s;
+    }
+
+    .infoItem{
+      width: 50%;
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+    }
+    
+    @media (max-width: 1100px) {
+      .infoItem{
+        width: 100%;
+      }
     }
 
     .done-enter-active,

@@ -71,7 +71,7 @@ export default {
       prop:{
         type: Boolean,
         default: false
-      }
+      },
     },
     stroke:{
       type: String
@@ -83,7 +83,6 @@ export default {
     },
     Create(){
       if(this.element.event && this.element.types) {
-        if (!this.element2.prop) {
           this.element.date = this.format(this.date)
           let minut = this.date.getMinutes()
           let hours = this.date.getHours()
@@ -118,11 +117,6 @@ export default {
             types: '',
           }
           this.visible = false
-        } else {
-          this.$emit('update:show', false);
-          this.$emit('create', this.element);
-          this.visible = false
-        }
       }else{
         this.visible = true
       }
@@ -131,6 +125,7 @@ export default {
   updated(){
     if(this.element2.prop){
       this.element = this.element2
+      this.element.prop = true
     }else{
       console.log(false)
     }
