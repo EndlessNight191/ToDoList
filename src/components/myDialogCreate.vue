@@ -66,13 +66,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    element2:{
-      type: Object,
-      prop:{
-        type: Boolean,
-        default: false
-      },
-    },
     stroke:{
       type: String
     }
@@ -104,9 +97,8 @@ export default {
 
           stroke = ("00" + stroke).slice(-2);
           stroke2 = ("00" + stroke2).slice(-2);
-          console.log(stroke2)
-          console.log(stroke)
           this.element.time = `${stroke2}:${stroke}`
+          this.element.done = false
           this.$emit('update:show', false);
           this.element.id = Date.now();
           this.$emit('create', this.element);
@@ -122,14 +114,6 @@ export default {
       }
     },
   },
-  updated(){
-    if(this.element2.prop){
-      this.element = this.element2
-      this.element.prop = true
-    }else{
-      console.log(false)
-    }
-  }
 }
 </script>
 

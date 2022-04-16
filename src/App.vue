@@ -13,7 +13,9 @@
         <MyInfoTime v-if="showInfoTime" :element="itemInfoTime"></MyInfoTime>
       </transition>
       <h1 style="margin: 0.5rem auto; color: white">My List</h1>
-      <MyInformate :procent="procent" :procent2="procent2" :percentHundred="percent1" :percentHundred2="percent2"></MyInformate>
+
+      <MyInformate v-model:procent="procent" v-model:procent2="procent2" v-model:percentHundred="percent1" v-model:percentHundred2="percent2" />
+
     <div class="main">
     <header>
         <div id="v-model-select" style="display: flex; align-items: center">
@@ -44,38 +46,35 @@
       </div>
     </header>
 
-      <myDialog :stroke="text" :element2="element2" @create="creaateElement" v-model:show="dialogVisible"/>
-      <myDialog :stroke="text2" :element2="element2" @create="refactorElement" v-model:show="dialogVisible2"/>
-
       <transition-group name="list" tag="div" class="instruments">
-        <elemItem @refactor="refactor" @deletes="deletes" @changeDone="changeDone" :elem="elem" v-for="elem in elements2" :key="elem.index"/>
+        <elemItem @refactor="refactor" @deletes="deletes" @changeDone="changeDone" :elem="elem" v-for="elem in elements2" :key="elem.id"/>
       </transition-group>
 
   </div>
+      <my-dialog-create :stroke="text" @create="creaateElement" v-model:show="dialogVisible"/>
+      <my-dialog-remote :stroke="text2" v-model:element2="element2" @create="refactorElement" v-model:show="dialogVisible2"/>
     </div>
 
 </template>
 
 <script>
-import { ref } from 'vue'
-import elemItem from '@/components/elemItem.vue'
-import myDialog from '@/components/myDialog.vue'
-import MyInformate from '@/components/MyInformate.vue'
+import elemItem from '@/components/elemItem.vue';
+import MyInformate from '@/components/MyInformate.vue';
 import MyInfoTime from "@/components/MyInfoTime";
+import myDialogRemote from '@/components/myDialogRemote.vue';
+import myDialogCreate from '@/components/myDialogCreate.vue';
 
 
 export default {
   name: 'App',
-  data(){
-    return{
+  data() {
+    return {
       showInfoTime: false,
       itemInfoTime: '',
       percent1: 0,
       percent2: 0,
       searche: '',
-      element2: {
-        prop: false
-      },
+      element2: {},
       isShowDropdown: false,
       visible: false,
       text: 'Добавить',
@@ -87,30 +86,29 @@ export default {
       selected: 'all',
       show__footer: true,
       authObject: {
-          login: '',
-          password: '',
+        login: '',
+        password: '',
       },
-      trueAuth:{
-          login: 'Vlad',
-          password: '0000',
+      trueAuth: {
+        login: 'Vlad',
+        password: '0000',
       },
-      mainElements: [
-
-      ],
+      mainElements: [],
       elements: [],
     }
   },
   components: {
     elemItem,
-    myDialog,
     MyInformate,
-    MyInfoTime
+    MyInfoTime,
+    myDialogCreate,
+    myDialogRemote,
   },
   methods: {
-    changeDone(element){
+    changeDone(element) {
       let count = 0
-      for(let elem of this.mainElements){
-        if(elem.id === element.id){
+      for (let elem of this.mainElements) {
+        if (elem.id === element.id) {
           this.mainElements[count].done = element.done
         }
         count++
@@ -118,47 +116,31 @@ export default {
 
       let plusCount = 0
       let minusCount = 0
-      for(let element of this.mainElements){
-        if(!element.done){
+      for (let ThisElement of this.mainElements) {
+        if (!ThisElement.done) {
           plusCount++
-        }else{minusCount++}
+        } else {
+          minusCount++
+        }
       }
-      this.percent1 = (plusCount*100)/this.mainElements.length
-      this.percent2 = (minusCount*100)/this.mainElements.length
+      this.percent1 = Math.floor((plusCount * 100) / this.mainElements.length)
+      this.percent2 = Math.floor((minusCount * 100) / this.mainElements.length)
     },
-    auth(){
-        if(this.authObject.login === this.trueAuth.login && this.authObject.password === this.trueAuth.password) {
-          this.show = false
-          this.show__foter = true
-        }
+    auth() {
+      if (this.authObject.login === this.trueAuth.login && this.authObject.password === this.trueAuth.password) {
+        this.show = false
+        this.show__foter = true
+      }
     },
-    add(){
-        console.log(1)
+    add() {
+      console.log(1)
     },
-    filterTime(){
-      let one = ''
-      let two = ''
-
-      this.elements.sort(function (a, b){
-
-        for(let i=0; i<a.time.length; i++){
-          if(a.time[i] !== ':'){
-            one += a.time[i]
-            one * 1
-          }
-        }
-
-        for(let i=0; i<b.time.length; i++){
-          if(b.time[i] !== ':'){
-            two += b.time[i]
-            two * 1
-          }
-        }
-
-        if (one < two) {
+    filterTime() {
+      this.elements.sort(function (a, b) {
+        if (a.time < b.time) {
           return -1;
         }
-        if (one > two) {
+        if (a.time > b.time) {
           return 1;
         }
         // a должно быть равным b
@@ -166,98 +148,72 @@ export default {
       })
       this.isShowDropdown = false
     },
-    filterDefault(){
+    filterDefault() {
       this.elements = this.mainElements
-    },
-    filterDone(){
-      this.elements = this.mainElements.filter( item => item.done === true )
-    },
-    filterNotCompleted(){
-      this.elements = this.mainElements.filter( item => item.done === false )
-    },
-    filterDate(){
-      let yearOne = ''
-      let mongthOne = ''
-      let dayOne = ''
-      let countOne = 0
-      let yearTwo = ''
-      let mongthTwo = ''
-      let dayTwo = ''
-      let countTwo = 0
-      let one = 0
-      let two = 0
-      this.elements.sort(function (a, b){
-
-        for(let i=a.date.length-1; i>=0; i--){
-          if(a.date[i] !== '/'){
-            countOne++
-            if(countOne <= 4){
-              yearOne += a.date[i]
-            }else if(countOne >= 5 && countOne <= 6){
-              mongthOne += a.date[i]
-            }else if(countOne >= 7 && countOne <= 8){
-              dayOne += a.date[i]
-            }
-          }
-        }
-
-        yearOne = ("00" + yearOne).slice(-2);
-        mongthOne = ("00" + mongthOne).slice(-2);
-        dayOne = ("00" + dayOne).slice(-2);
-
-        for(let i=b.date.length-1; i>=0; i--){
-          if(b.date[i] !== '/'){
-            countTwo++
-            if(countTwo <= 4){
-              yearTwo += b.date[i]
-            }else if(countTwo >= 5 && countTwo <= 6){
-              mongthTwo += b.date[i]
-            }else if(countTwo >= 7 && countTwo <= 8){
-              dayTwo += b.date[i]
-            }
-          }
-        }
-
-        yearTwo = ("00" + yearTwo).slice(-2);
-        mongthTwo = ("00" + mongthTwo).slice(-2);
-        dayTwo = ("00" + dayTwo).slice(-2);
-
-        one = yearOne + mongthOne + dayOne
-        two = yearTwo + mongthTwo + dayTwo
-
-        if (one < two) {
+      this.elements.sort(function (a, b) {
+        if (a.id < b.id) {
           return -1;
         }
-        if (one > two) {
+        if (a.id > b.id) {
+          return 1;
+        }
+        // a должно быть равным b
+        return 0;
+      })
+      this.isShowDropdown = false
+    },
+    filterDone() {
+      this.elements = this.mainElements.filter(item => item.done === true)
+    },
+    filterNotCompleted() {
+      this.elements = this.mainElements.filter(item => item.done === false)
+    },
+    filterDate() {
+      this.elements.sort(function (a, b) {
+        if (a.date < b.date) {
+          return -1;
+        }
+        if (a.date > b.date) {
           return 1;
         }
         // a должно быть равным b
         return 0;
       })
     },
-    inVisible(){
-      this.element2.prop = false
+    inVisible() {
       this.dialogVisible = true
     },
-    creaateElement(element){
+    creaateElement(element) {
       this.mainElements.push(element)
-    },
-    refactor(element){
-      this.element2 = element
-      this.element2.prop = true
-      this.dialogVisible2 = true
-    },
-    refactorElement(element){
-      for(let elem in this.mainElements){
-        if(this.mainElements[elem].id === element.id){
-            this.mainElements[elem] = element
+
+      let plusCount = 0
+      let minusCount = 0
+      for (let ThisElement of this.mainElements) {
+        if (!ThisElement.done) {
+          plusCount++
+        } else {
+          minusCount++
         }
       }
+      this.percent1 = Math.floor((plusCount * 100) / this.mainElements.length)
+      this.percent2 = Math.floor((minusCount * 100) / this.mainElements.length)
     },
-    deletes(id){
-      for(let elem in this.mainElements){
+    refactor(element) {
+      this.element2 = element
+      this.dialogVisible2 = true
+    },
+    refactorElement(element) {
+      for (let elem in this.mainElements) {
+        if (this.mainElements[elem].id === element.id) {
+          this.mainElements[elem] = element
+        }
+      }
+      this.element2 = {}
+    },
+    deletes(id) {
+      for (let elem in this.mainElements) {
         elem = Number(elem)
-        if(this.mainElements[elem].id === id){
+        if (this.mainElements[elem].id === id) {
           this.mainElements.splice(elem, 1)
           break
         }
@@ -265,60 +221,57 @@ export default {
 
       let plusCount = 0
       let minusCount = 0
-      for(let element of this.mainElements){
-        if(!element.done){
+      for (let element of this.mainElements) {
+        if (!element.done) {
           plusCount++
-        }else{minusCount++}
+        } else {
+          minusCount++
+        }
       }
-      this.percent1 = (plusCount*100)/this.mainElements.length
-      this.percent2 = (minusCount*100)/this.mainElements.length
+      this.percent1 = Math.floor((plusCount * 100) / this.mainElements.length)
+      this.percent2 = Math.floor((minusCount * 100) / this.mainElements.length)
     },
   },
-  watch:{
-    selected(newSelect, old){
-       if(this.selected === 'all') {
-         this.elements = this.mainElements
-       }else{
-         this.elements = this.mainElements.filter(function (item){
-           return newSelect === item.types
-         })
-       }
+  watch: {
+      selected(newSelect, old) {
+        if (this.selected === 'all') {
+          this.elements = this.mainElements
+        } else {
+          this.elements = this.mainElements.filter(function (item) {
+            return newSelect === item.types
+          })
+        }
+      },
     },
-    mainElements(){
-      let plusCount = 0
-      let minusCount = 0
-      for(let element of this.mainElements){
-        if(!element.done){
-          plusCount++
-        }else{minusCount++}
-      }
-      this.percent1 = (plusCount*100)/this.mainElements.length
-      this.percent2 = (minusCount*100)/this.mainElements.length
-    }
-  },
-  created() {
-      if(localStorage.array) {
+    created() {
+      if (localStorage.array) {
         this.mainElements = JSON.parse(localStorage.getItem('array'))
       }
       this.elements = this.mainElements
+
+      if(localStorage.percent1 || localStorage.percent2){
+        this.percent1 = JSON.parse(localStorage.getItem('percent1'))
+        this.percent2 = JSON.parse(localStorage.getItem('percent2'))
+      }
+
       setInterval(() => {
         let time = new Date().toLocaleString()
         time = time.split(',')
         let date = time[0]
         let timeWatch = time[1].slice(1)
         const date1 = new Date(`${date}, ${timeWatch}`);
-        this.elements.map( item => {
+        this.elements.map(item => {
           const date2 = new Date(`${item.date}, ${item.time}`);
           const difference = date2.getTime() - date1.getTime();
           let minutes = Math.floor(difference / 60000);
-          if((minutes <= 60 && minutes >= 59) || (minutes <= 30 && minutes >= 29)){
+          if ((minutes <= 60 && minutes >= 59) || (minutes <= 30 && minutes >= 29)) {
             this.itemInfoTime = item
             this.showInfoTime = true
             setInterval(() => {
               this.itemInfoTime = ''
               this.showInfoTime = false
             }, 6000)
-          }else{
+          } else {
             this.itemInfoTime = ''
             this.showInfoTime = false
           }
@@ -326,43 +279,45 @@ export default {
         })
 
       }, 60000);
-  },
-  computed: {
-    elements2() {
-      if (this.searche) {
-        return this.elements.filter(item => {
-          return item.event.includes(this.searche);
-        });
-      }
-      return this.elements
     },
-    local(){
-      if(this.mainElements.length > 0){
-        localStorage.array = JSON.stringify(this.mainElements)
-      }
-      return ''
-    },
-    procent(){
-      let count = 0
-      for(let element of this.mainElements){
-        if(!element.done){
-          count++
+    computed: {
+      elements2() {
+        if (this.searche) {
+          return this.elements.filter(item => {
+            return item.event.includes(this.searche);
+          });
         }
-      }
-
-      return count
-    },
-    procent2(){
-      let count = 0
-      for(let element of this.mainElements){
-        if(element.done){
-          count++
+        return this.elements
+      },
+      local() {
+        if (this.mainElements.length > -1) {
+          localStorage.array = JSON.stringify(this.mainElements)
         }
-      }
+        localStorage.percent1 = JSON.stringify(this.percent1)
+        localStorage.percent2 = JSON.stringify(this.percent2)
+        return ''
+      },
+      procent() {
+        let count = 0
+        for (let element of this.mainElements) {
+          if (!element.done) {
+            count++
+          }
+        }
 
-      return count
-    }
-  },
+        return count
+      },
+      procent2() {
+        let count = 0
+        for (let element of this.mainElements) {
+          if (element.done) {
+            count++
+          }
+        }
+
+        return count
+      }
+    },
 }
 </script>
 
@@ -586,13 +541,14 @@ option{
 }
 .list-enter-active,
 .list-leave-active {
-  transform: translateX(130px);
+  transform: translateX(0px);
   transition: all .4s ease;
 }
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
   transform: translateX(130px);
+  position: relative;
 }
 
 .list-move{

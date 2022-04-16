@@ -73,6 +73,18 @@ export default {
       justify-content: center;
       align-items: center;
     }
+    .white:hover{
+      padding: 7px;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #ac92ec;
+      background-color: white;
+      border-radius: 50%;
+      margin-right: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .isDone{
       padding: 5px 5px;
